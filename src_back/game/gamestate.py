@@ -1,0 +1,117 @@
+from .constants import Ghost_state, Ghost_type, Game_status,Directions
+from .player import PlayerState
+from .ghost import GhostState
+from  ..models import Game_config
+from random import randint
+from ..maze_loader import loader
+class Game_state:
+
+    def __init__(self,maze:list[list[int]],width:int,height:int,pacgums:set[tuple[int,int]],
+                 super_pacgums:set[tuple[int,int]],player:PlayerState,
+                 ghosts:list[GhostState],score:int, level:int, timer:float,game_status:Game_status,
+                 cheat_mode:bool, cheats:dict[str,bool],config:Game_config, highscores:list[dict]) -> None:
+
+                 self.maze = maze
+                 self.width = width
+                 self.height = height
+                 self.pacgums = pacgums
+                 self.super_pacgums =super_pacgums
+                 self.player = player
+                 self.ghosts = ghosts
+                 self.score = score
+                 self.level = level
+                 self.timer = timer
+                 self.game_status = game_status
+                 self.cheat_mode = cheat_mode
+                 self.cheats = cheats
+                 self.config = config
+                 self.highscores = highscores
+
+    def initialize_level(self) -> None:
+        exclude_po = []
+        player_position = loader.get_center_position(self.width, self.height)
+
+        ghosts_position = loader.place_ghosts(self.width, self.height)
+
+        super_pacgums = loader.place_super_pacgums(self.width,self.height)
+
+        exclude_po.extend(player_position)
+        exclude_po.extend(ghosts_position)
+        exclude_po.extend(super_pacgums)
+    
+        if self.level == 0:
+            level_seed = self.config.seed
+        else:
+            level_seed = randint(1, 100)
+
+        self.maze = loader.load_maze(self.width,self.height, level_seed)
+
+        self.pacgums = loader.place_pacgums(self.maze,self.config.pacgum,exclude_po,level_seed)
+        self.super_pacgums = loader.place_super_pacgums(self.width,self.height)
+
+        self.player = PlayerState(player_position[0],player_position[1],
+                             Directions.RIGHT,None,self.config.lives,self.score )
+
+        blinky_ghost = GhostState(ghosts_position[0][0],ghosts_position[0][1],Directions.LEFT,
+                                  Ghost_type.BLINKY,Ghost_state.SCATTER,ghosts_position[0])
+        
+        plinky_ghost = GhostState(ghosts_position[1][0],ghosts_position[1][1],Directions.LEFT,
+                                  Ghost_type.PINKY,Ghost_state.SCATTER,ghosts_position[1])
+        
+        inky_ghost = GhostState(ghosts_position[2][0],ghosts_position[2][1],Directions.LEFT,
+                                Ghost_type.INKY,Ghost_state.SCATTER,ghosts_position[2])
+        
+        clyde_ghost = GhostState(ghosts_position[3][0],ghosts_position[3][1],Directions.LEFT,
+                                Ghost_type.CLYDE,Ghost_state.SCATTER,ghosts_position[3])
+        
+        self.ghosts = [blinky_ghost,plinky_ghost,inky_ghost,clyde_ghost]
+        self.timer = self.config.level_max_time
+
+        self.game_status = Game_status.PLAYING
+
+
+    def all_data_to_dict(self) -> dict:
+        result_dict = {"maze":self.maze,
+                       "width": self.width,
+                       "height": self.height,
+                       "player": self.player.player_dict(),
+                       "ghosts": [ghost.ghosts_dict() for ghost in self.ghosts],
+                       "pacgums": list(self.pacgums),
+                       "super_pacgums":list(self.super_pacgums),
+                       "score": self.score,
+                       "level": self.level,
+                       "timer": self.timer,
+                       "game_status": self.game_status.value,
+                       "cheat_mode" : self.cheat_mode,
+                       "cheats": self.cheats,
+                       "highscores": self.highscores}
+
+        return result_dict
+
+
+    def handel_input(self,direct:str) -> None :
+        """ this function is handel the input key by convert it to enum value  """
+        if direct == "up":
+            self.player.next_direction = Directions.UP
+        elif direct == "down":
+            self.player.next_direction = Directions.DOWN
+        elif direct == "left":
+            self.player.next_direction = Directions.LEFT
+        elif direct == "right":
+            self.player.next_direction = Directions.RIGHT
+    
+
+    def update_timers(self,tm:float)-> None:
+        """ this method is for count time of power of player and the time of level"""
+        self.timer -= tm
+        if self.timer <= 0.0:
+            self.timer = 0.0
+        
+        if self.player.is_power:
+            self.player.power_time -= tm
+            if self.player.power_time <= 0.0:
+                self.player.is_power= False
+                self.player.power_time = 0.0
+
+    def move_player(item) -> None:
+        
