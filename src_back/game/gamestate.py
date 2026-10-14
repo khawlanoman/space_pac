@@ -4,6 +4,7 @@ from .ghost import GhostState
 from  ..models import Game_config
 from random import randint
 from ..maze_loader import loader
+
 class Game_state:
 
     def __init__(self,maze:list[list[int]],width:int,height:int,pacgums:set[tuple[int,int]],
@@ -28,6 +29,7 @@ class Game_state:
                  self.highscores = highscores
 
     def initialize_level(self) -> None:
+        """ this function  for  initialization all the data we need  to use """
         exclude_po = []
         player_position = loader.get_center_position(self.width, self.height)
 
@@ -71,6 +73,7 @@ class Game_state:
 
 
     def all_data_to_dict(self) -> dict:
+        """ this function is add  all data we need it  to dict """
         result_dict = {"maze":self.maze,
                        "width": self.width,
                        "height": self.height,
@@ -89,7 +92,7 @@ class Game_state:
         return result_dict
 
 
-    def handel_input(self,direct:str) -> None :
+    def handle_input(self,direct:str) -> None :
         """ this function is handel the input key by convert it to enum value  """
         if direct == "up":
             self.player.next_direction = Directions.UP
@@ -113,5 +116,53 @@ class Game_state:
                 self.player.is_power= False
                 self.player.power_time = 0.0
 
-    def move_player(item) -> None:
-        
+
+
+    def move_player(self, dt):
+            """ this methode is   """
+            tile_x = int(self.player.x)
+            tile_y = int(self.player.y)
+            
+
+            if self.player.next_direction:
+                if loader.can_move(self.maze, tile_x, tile_y, self.player.next_direction):
+                    self.player.direction = self.player.next_direction
+                    self.player.next_direction = None
+  
+                
+ 
+            if not loader.can_move(self.maze, tile_x, tile_y, self.player.direction):
+                return  
+            
+            dx, dy = self.player.direction.value[:2]
+            target_x = tile_x + dx
+            target_y = tile_y + dy
+            
+            distance = self.player.speed * dt
+            
+            if dx > 0:
+                self.player.x = min(self.player.x + distance, target_x)
+            elif dx < 0:
+                self.player.x = max(self.player.x - distance, target_x)
+            if dy > 0:
+                self.player.y = min(self.player.y + distance, target_y)
+            elif dy < 0:
+                self.player.y = max(self.player.y - distance, target_y)
+    
+    def check_pacgum_at_player(self)-> None:
+        """this function is check the position of pacman and super_pacgums,pacgums, 
+            if pacman and one of them in the same position  remove it from the list of super_pacgums or
+            pacgums and add the points to score
+        """
+        player_x = int(self.player.x)
+        player_y = int(self.player.y)
+
+        if (player_x,player_y) in self.pacgums:
+            self.pacgums.remove((player_x,player_y))
+            self.score += self.config.points_per_pacgum
+
+        if (player_x,player_y) in self.super_pacgums:
+            self.super_pacgums.remove((player_x,player_y))
+            self.score += self.config.points_per_super_pacgum
+            
+    def

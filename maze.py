@@ -3,7 +3,7 @@ from src_back.maze_loader import loader
 from src_back import parsing
 from src_back.game import constants
 from src_back.game.gamestate import Game_state
-from src_back.game.constants import Game_status
+from src_back.game.constants import Game_status,Directions
 import argparse
 
 
@@ -16,7 +16,7 @@ def parser_args() :
     return args
 
 
-def print_maze(maze:list, place_pacgum:set,corner_position:list,player_position,ghosts_place,super_pacgums) -> None:
+def print_maze(maze:list, place_pacgum:set,corner_position:list,player_position,ghosts_place,super_pacgums,game_state) -> None:
             grid = maze
             height = len(grid)
             width = len(grid[0])
@@ -31,6 +31,9 @@ def print_maze(maze:list, place_pacgum:set,corner_position:list,player_position,
                 for x in range(width):
                     if (x,y) ==  player_position:
                         cell = " @ "
+                    
+                    elif (x,y) == (game_state.player.x,game_state.player.y):
+                        cell = " h "
             
                     elif (x,y) in ghosts_place:
                         cell = " G "
@@ -94,7 +97,7 @@ def main():
 
 
 
-        game_state =  Game_state(maze, width, height, place_pacgum, super_pacgums, player_position,
+        game_state =  Game_state(maze, width, height, place_pacgum, super_pacgums, (player_position),
                                 ghosts_place,0,count_levels, data.level_max_time,Game_status.PLAYING,
                                 False,{},data,[])
 
@@ -103,18 +106,35 @@ def main():
 
        
         
-        # game_state.handel_input("right")
+       
         #  take data for this function 
         all_data  = game_state.all_data_to_dict()
         #  /////
         player = (all_data["player"]["x"],all_data["player"]["y"])
+        # game_state.handle_input("up")
+       
 
 
-        print_maze(all_data["maze"],all_data["pacgums"],all_data["super_pacgums"],player,ghosts_place, super_pacgums)
+        game_state.handle_input("up")
 
+        print("→", game_state.player.next_direction)
+       
+        print("Dictionary x:", all_data["player"]["x"])
+        print("Dictionary y:", all_data["player"]["y"])
+
+        game_state.move_player(3)
+
+        print("Player object x:", game_state.player.x)
+        print("Player object y:", game_state.player.y)
+        game_state.move_player(3)
+
+        print("pacgums:",len(game_state.pacgums))
+        game_state.check_pacgum_at_player()
+        print("pacgums:",len(game_state.pacgums))
+        print_maze(all_data["maze"],all_data["pacgums"],all_data["super_pacgums"],player,ghosts_place, super_pacgums,game_state)
+
+      
         
-
-
 
         # print(" before timer:",all_data["timer"])
         # print(" before is power:",all_data["player"]["is_power"])

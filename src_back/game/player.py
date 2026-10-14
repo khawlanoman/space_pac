@@ -1,6 +1,6 @@
 from .constants import Directions
 class PlayerState:
-    def __init__(self,x:float=0.0,y:float=0.0,direction:Directions= Directions.RIGHT, 
+    def __init__(self,x:float=0.0,y:float=0.0,direction:Directions= None, 
                  next_direction:Directions= None,lives:int=3,score:int=0,is_power:bool=False,
                  power_time:float=0.0, speed:float=5.0) -> None:
         self.x = x 

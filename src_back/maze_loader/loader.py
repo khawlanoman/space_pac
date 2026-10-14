@@ -7,28 +7,28 @@ def load_maze( width:int,height:int,seed:int) -> list:
     return grid.maze
 
 
-
-def has_wall(maze:list, r: int,c: int, direction:tuple)-> bool :
-
-    cell_bit = maze[r][c]
+def has_wall(maze, x, y, direction):
+    cell_bit = maze[y][x]
     dire_bit = direction.value[2]
     return (cell_bit & dire_bit) != 0
 
 
-def can_move(maze:list, x:int, y:int, direction:tuple)->bool:
-    dire_x =direction.value[0]
-    dire_y = direction.value[1]
-
-    nx, ny = (x + dire_x, y + dire_y)
-
-    if (nx <= 0 or nx > x) and  (ny <= 0 or ny > y):
+def can_move(maze, x, y, direction):
+    width = len(maze[0])
+    height = len(maze)
+    
+    dx = direction.value[0]
+    dy = direction.value[1]
+    nx = x + dx
+    ny = y + dy
+    
+    if nx < 0 or nx >= width or ny < 0 or ny >= height:
         return False
     
-    wall =has_wall(maze,0,0,direction)
-    if wall == True:
+    if has_wall(maze, x, y, direction):
         return False
+    
     return True
-
 
 
 def  get_valid_neighbors(maze, x: int,y :int)-> list:
