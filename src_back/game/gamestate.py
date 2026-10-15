@@ -163,6 +163,24 @@ class Game_state:
 
         if (player_x,player_y) in self.super_pacgums:
             self.super_pacgums.remove((player_x,player_y))
+            for  ghost in self.ghosts:
+                ghost.state = Ghost_state.FRIGHTENED
+
             self.score += self.config.points_per_super_pacgum
-            
+
+
+    def check_ghost_collision(self) -> None:
+       
+        for ghost in self.ghosts:
+            player_x = int(self.player.x)
+            player_y = int(self.player.y)
+            if (ghost.x, ghost.y) == (player_x, player_y):
     
+                if ghost.state ==  Ghost_state.FRIGHTENED:
+                    ghost.state =  Ghost_state.EATEN
+            
+                elif ghost.state ==  Ghost_state.EATEN:
+                    continue
+                elif self.player.lives > 0:
+                    self.player.lives -= 1
+            print("lives:", self.player.lives)

@@ -8,9 +8,7 @@ import pygame
 import argparse
 
 
-# -----------------------------
-# Pygame configuration
-# -----------------------------
+
 CELL_SIZE = 30
 FPS = 50
 
@@ -22,11 +20,9 @@ PINK = (255, 120, 190)
 CYAN = (0, 220, 230)
 ORANGE = (255, 160, 30)
 RED = (255, 0, 0)
+BLUET = (0, 0, 220)
 
 
-# -----------------------------
-# Initialize your real backend
-# -----------------------------
 
 def parser_args() :
     parser = argparse.ArgumentParser()
@@ -82,17 +78,14 @@ def create_game():
     return game_state, width, height
 
 
-# -----------------------------
-# Draw one cell's walls
-# -----------------------------
+
 def draw_cell_walls(screen, maze, x, y):
     left = x * CELL_SIZE
     top = y * CELL_SIZE
     right = left + CELL_SIZE
     bottom = top + CELL_SIZE
 
-    # Check the four walls using your existing backend helper.
-    # These enum members must match your Directions enum.
+
     wall_checks = [
         (Directions.UP, (left, top), (right, top)),
         (Directions.RIGHT, (right, top), (right, bottom)),
@@ -105,9 +98,6 @@ def draw_cell_walls(screen, maze, x, y):
             pygame.draw.line(screen, BLUE, start, end, 2)
 
 
-# -----------------------------
-# Draw pellets
-# -----------------------------
 def draw_pellets(screen, positions, color, radius):
     if not positions:
         return
@@ -124,9 +114,7 @@ def draw_pellets(screen, positions, color, radius):
         pygame.draw.circle(screen, color, center, radius)
 
 
-# -----------------------------
-# Draw player
-# -----------------------------
+
 def draw_player(screen, player_data):
     x = int(player_data["x"])
     y = int(player_data["y"])
@@ -144,16 +132,13 @@ def draw_player(screen, player_data):
     )
 
 
-# -----------------------------
-# Draw ghosts
-# -----------------------------
 def draw_ghosts(screen, ghosts_data):
     if not ghosts_data:
         return
 
     colors = [PINK, CYAN, ORANGE, RED]
 
-    # Adapt this function if your ghost data has a different structure.
+    
     if isinstance(ghosts_data, dict):
         ghosts = ghosts_data.values()
     else:
@@ -173,18 +158,18 @@ def draw_ghosts(screen, ghosts_data):
             int(float(x) * CELL_SIZE + CELL_SIZE / 2),
             int(float(y) * CELL_SIZE + CELL_SIZE / 2)
         )
+        if ghost["state"] == "frightened":
+            colors = [BLUET]
 
-        pygame.draw.circle(
-            screen,
-            colors[index % len(colors)],
-            center,
-            CELL_SIZE // 2 - 3
-        )
+        if ghost["state"] != "eaten":
+            pygame.draw.circle(
+                screen,
+                colors[index % len(colors)],
+                center,
+                CELL_SIZE // 2 - 3
+            )
 
 
-# -----------------------------
-# Main visual tester
-# -----------------------------
 def main():
     pygame.init()
 
@@ -207,7 +192,7 @@ def main():
     }
 
     while running:
-        # Actual elapsed time in seconds.
+        
         dt = clock.tick(FPS) / 1000.0
 
         for event in pygame.event.get():
@@ -228,15 +213,19 @@ def main():
         
         # print("Player:", game_state.player.x, game_state.player.y)
         #print("Pacgums before:", len(game_state.pacgums))
+        all_data = game_state.all_data_to_dict()
 
         game_state.check_pacgum_at_player()
-        print("score:",game_state.score)
-        print("super:", game_state.super_pacgums)
-        print("player:",game_state.player.x,game_state.player.y)
+        # print("score:",game_state.score)
+        # print("super:", game_state.super_pacgums)
+        game_state.check_ghost_collision()
+        # print("ghosts:", all_data["ghosts"])
+        # print("player:",game_state.player.x,game_state.player.y)
         # print("Pacgums after:", len(game_state.pacgums))
 
-        # Get fresh data after movement.
-        all_data = game_state.all_data_to_dict()
+        
+
+        
       
         screen.fill(BLACK)
 

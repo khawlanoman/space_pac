@@ -62,7 +62,7 @@ def get_corner_positions(width: int, height: int) -> list:
     return positions
 
 def place_super_pacgums(width: int, height: int)-> list:
-     """ this method for  the position of super pacgums by  get_corner_positions"""
+    """ this method for  the position of super pacgums by  get_corner_positions"""
     list_place = get_corner_positions(width, height)
     return list_place
 
