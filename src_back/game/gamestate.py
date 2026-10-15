@@ -119,7 +119,7 @@ class Game_state:
 
 
     def move_player(self, dt):
-            """ this methode is   """
+            """ this methode is moves the player in the current direction if there is no wall """
             tile_x = int(self.player.x)
             tile_y = int(self.player.y)
             
@@ -165,4 +165,4 @@ class Game_state:
             self.super_pacgums.remove((player_x,player_y))
             self.score += self.config.points_per_super_pacgum
             
-    def
+    
