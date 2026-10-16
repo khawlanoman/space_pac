@@ -163,24 +163,51 @@ class Game_state:
 
         if (player_x,player_y) in self.super_pacgums:
             self.super_pacgums.remove((player_x,player_y))
-            for  ghost in self.ghosts:
-                ghost.state = Ghost_state.FRIGHTENED
-
+            for ghost in self.ghosts:
+                ghost.state ==  Ghost_state.FRIGHTENED
             self.score += self.config.points_per_super_pacgum
 
 
-    def check_ghost_collision(self) -> None:
-       
+    def  rest_player(self) -> None :
+        self.player.lives -= 1
+
+        if self.player.lives <= 0 :
+           self.game_status = Game_status.GAME_OVER
+           return
+        
+        player_position = loader.get_center_position(self.width, self.height)
+        ghosts_position = loader.place_ghosts(self.width, self.height)
+
+        self.player.x, self.player.y = player_position
+
         for ghost in self.ghosts:
-            player_x = int(self.player.x)
-            player_y = int(self.player.y)
-            if (ghost.x, ghost.y) == (player_x, player_y):
-    
-                if ghost.state ==  Ghost_state.FRIGHTENED:
-                    ghost.state =  Ghost_state.EATEN
+            if ghost == "blinky_ghost":
+                ghost.x,ghost.y = ghosts_position[0][0], ghosts_position[0][1]
+            elif ghost == "plinky_ghost":
+                ghost.x,ghost.y = ghosts_position[1][0], ghosts_position[1][1]
+            elif ghost == "inky_ghost":
+                ghost.x,ghost.y = ghosts_position[2][0], ghosts_position[2][1]
+            elif ghost == "clyde_ghost":
+                ghost.x,ghost.y = ghosts_position[3][0], ghosts_position[3][1]
+
+    def check_ghost_collision(self) -> None:
+        player_x = int(self.player.x)
+        player_y = int(self.player.y)
+
+        for ghost in self.ghosts:
+
+            if (ghost.x, ghost.y) != (player_x, player_y):
+                continue
+
+
+            if ghost.state ==  Ghost_state.EATEN:
+                continue
+
+            elif ghost.state ==  Ghost_state.FRIGHTENED:
+                ghost.state =  Ghost_state.EATEN
             
-                elif ghost.state ==  Ghost_state.EATEN:
-                    continue
-                elif self.player.lives > 0:
-                    self.player.lives -= 1
+            else:
+                self.rest_player()
+                # break
+
             print("lives:", self.player.lives)
