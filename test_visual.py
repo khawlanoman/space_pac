@@ -223,10 +223,7 @@ def main():
         # print("player:",game_state.player.x,game_state.player.y)
         # print("Pacgums after:", len(game_state.pacgums))
 
-        
 
-        
-      
         screen.fill(BLACK)
 
         maze = all_data["maze"]
