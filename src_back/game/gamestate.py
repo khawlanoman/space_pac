@@ -244,11 +244,26 @@ class Game_state:
                     ghost.respawn_time = 0.0
                     ghost.state = Ghost_state.SCATTER
 
+    def check_ghost(self, ghost)  -> None:
+        ghosts_position = loader.place_ghosts(self.width, self.height)
+
+        if ghost.ghost_type == Ghost_type.BLINKY:
+            ghost.x,ghost.y = ghosts_position[0][0], ghosts_position[0][1]
+        elif ghost.ghost_type == Ghost_type.PINKY:
+            ghost.x,ghost.y = ghosts_position[1][0], ghosts_position[1][1]
+        elif ghost.ghost_type == Ghost_type.INKY:
+            ghost.x,ghost.y = ghosts_position[2][0], ghosts_position[2][1]
+        elif ghost.ghost_type == Ghost_type.CLYDE:
+            ghost.x,ghost.y = ghosts_position[3][0], ghosts_position[3][1]
+        return (ghost.x, ghost.y)
 
     def move_ghosts(time) -> None:
         for ghost in self.ghosts:
             
             if ghost.state == Ghost_state.SCATTER:
-                target_x, target_x
-
+                target_x, target_x = check_ghost(ghost)
+            elif ghosts_state == Ghost_state.CHASE:
+                target_x, target_y = self.player.x, self.player.tile_y
+            # elif ghost.state == Ghost_state.FRIGHTENED:
+            #     target_x,target_y = 
 
