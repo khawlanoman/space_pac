@@ -40,6 +40,7 @@ class Game_state:
         exclude_po.extend(player_position)
         exclude_po.extend(ghosts_position)
         exclude_po.extend(super_pacgums)
+        ghost_freaid = 3.0
     
         if self.level == 0:
             level_seed = self.config.seed
@@ -55,16 +56,16 @@ class Game_state:
                              Directions.RIGHT,None,self.config.lives,self.score )
 
         blinky_ghost = GhostState(ghosts_position[0][0],ghosts_position[0][1],Directions.LEFT,
-                                  Ghost_type.BLINKY,Ghost_state.SCATTER,ghosts_position[0])
+                                  Ghost_type.BLINKY,Ghost_state.SCATTER,ghosts_position[0],ghost_freaid)
         
         plinky_ghost = GhostState(ghosts_position[1][0],ghosts_position[1][1],Directions.LEFT,
-                                  Ghost_type.PINKY,Ghost_state.SCATTER,ghosts_position[1])
+                                  Ghost_type.PINKY,Ghost_state.SCATTER,ghosts_position[1],ghost_freaid)
         
         inky_ghost = GhostState(ghosts_position[2][0],ghosts_position[2][1],Directions.LEFT,
-                                Ghost_type.INKY,Ghost_state.SCATTER,ghosts_position[2])
+                                Ghost_type.INKY,Ghost_state.SCATTER,ghosts_position[2],ghost_freaid)
         
         clyde_ghost = GhostState(ghosts_position[3][0],ghosts_position[3][1],Directions.LEFT,
-                                Ghost_type.CLYDE,Ghost_state.SCATTER,ghosts_position[3])
+                                Ghost_type.CLYDE,Ghost_state.SCATTER,ghosts_position[3],ghost_freaid)
         
         self.ghosts = [blinky_ghost,plinky_ghost,inky_ghost,clyde_ghost]
         self.timer = self.config.level_max_time
@@ -115,6 +116,8 @@ class Game_state:
             if self.player.power_time <= 0.0:
                 self.player.is_power= False
                 self.player.power_time = 0.0
+        
+
 
 
 
@@ -148,7 +151,8 @@ class Game_state:
                 self.player.y = min(self.player.y + distance, target_y)
             elif dy < 0:
                 self.player.y = max(self.player.y - distance, target_y)
-    
+
+
     def check_pacgum_at_player(self)-> None:
         """this function is check the position of pacman and super_pacgums,pacgums, 
             if pacman and one of them in the same position  remove it from the list of super_pacgums or
@@ -163,8 +167,10 @@ class Game_state:
 
         if (player_x,player_y) in self.super_pacgums:
             self.super_pacgums.remove((player_x,player_y))
+
             for ghost in self.ghosts:
-                ghost.state ==  Ghost_state.FRIGHTENED
+                ghost.state =  Ghost_state.FRIGHTENED
+                ghost.ghost_freaid = 20.0
             self.score += self.config.points_per_super_pacgum
 
 
@@ -181,13 +187,13 @@ class Game_state:
         self.player.x, self.player.y = player_position
 
         for ghost in self.ghosts:
-            if ghost == "blinky_ghost":
+            if ghost.ghost_type == Ghost_type.BLINKY:
                 ghost.x,ghost.y = ghosts_position[0][0], ghosts_position[0][1]
-            elif ghost == "plinky_ghost":
+            elif ghost.ghost_type == Ghost_type.PINKY:
                 ghost.x,ghost.y = ghosts_position[1][0], ghosts_position[1][1]
-            elif ghost == "inky_ghost":
+            elif ghost.ghost_type == Ghost_type.INKY:
                 ghost.x,ghost.y = ghosts_position[2][0], ghosts_position[2][1]
-            elif ghost == "clyde_ghost":
+            elif ghost.ghost_type == Ghost_type.CLYDE:
                 ghost.x,ghost.y = ghosts_position[3][0], ghosts_position[3][1]
 
     def check_ghost_collision(self) -> None:
@@ -196,6 +202,8 @@ class Game_state:
 
         for ghost in self.ghosts:
 
+            print("lives:", self.player.lives)
+            print("ghosts_state:", ghost.state)
             if (ghost.x, ghost.y) != (player_x, player_y):
                 continue
 
@@ -204,10 +212,30 @@ class Game_state:
                 continue
 
             elif ghost.state ==  Ghost_state.FRIGHTENED:
-                ghost.state =  Ghost_state.EATEN
+                ghost.state = Ghost_state.EATEN
+                ghost.respawn_time = 30.0
             
             else:
                 self.rest_player()
-                # break
+                break
 
-            print("lives:", self.player.lives)
+
+    def update_ghosts_time(self, time) ->None:
+        for ghost in self.ghosts:
+            if ghost.state == Ghost_state.FRIGHTENED:
+                ghost.ghost_freaid -= time
+                
+                if ghost.ghost_freaid <= 0:
+                    ghost.ghost_freaid = 0.0
+                    ghost.state = Ghost_state.SCATTER
+
+            if ghost.state == Ghost_state.EATEN:
+                ghost.respawn_time -= time
+
+                if ghost.respawn_time <= 0:
+                    ghost.respawn_time = 0.0
+                    ghost.state = Ghost_state.SCATTER
+
+
+
+

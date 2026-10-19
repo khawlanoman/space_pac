@@ -210,12 +210,16 @@ def main():
 
         # Your backend controls movement and collision.
         game_state.move_player(dt)
-        
+
+        game_state.update_ghosts_time(0.1)
+
+
+        game_state.check_pacgum_at_player()
         # print("Player:", game_state.player.x, game_state.player.y)
         #print("Pacgums before:", len(game_state.pacgums))
         all_data = game_state.all_data_to_dict()
 
-        game_state.check_pacgum_at_player()
+        
         # print("score:",game_state.score)
         # print("super:", game_state.super_pacgums)
         game_state.check_ghost_collision()
