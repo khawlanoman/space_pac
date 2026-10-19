@@ -175,6 +175,9 @@ class Game_state:
 
 
     def  rest_player(self) -> None :
+        """  this function is for decrement 
+        player live if  not in power mode , 
+        and back the player and  ghosts in ther first position """
         self.player.lives -= 1
 
         if self.player.lives <= 0 :
@@ -196,7 +199,10 @@ class Game_state:
             elif ghost.ghost_type == Ghost_type.CLYDE:
                 ghost.x,ghost.y = ghosts_position[3][0], ghosts_position[3][1]
 
+
     def check_ghost_collision(self) -> None:
+        """ this function is for check position
+        of ghost  and change it state """
         player_x = int(self.player.x)
         player_y = int(self.player.y)
 
@@ -221,6 +227,8 @@ class Game_state:
 
 
     def update_ghosts_time(self, time) ->None:
+        """ this function is for  update the time
+        of freaid ghost and respawn time of ghost """
         for ghost in self.ghosts:
             if ghost.state == Ghost_state.FRIGHTENED:
                 ghost.ghost_freaid -= time
@@ -237,5 +245,10 @@ class Game_state:
                     ghost.state = Ghost_state.SCATTER
 
 
+    def move_ghosts(time) -> None:
+        for ghost in self.ghosts:
+            
+            if ghost.state == Ghost_state.SCATTER:
+                target_x, target_x
 
 

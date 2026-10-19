@@ -178,6 +178,10 @@ def main():
     screen = pygame.display.set_mode(
         (width * CELL_SIZE, height * CELL_SIZE)
     )
+    font = pygame.font.SysFont("Arial", 40)
+
+    text_surface = font.render("GAME OVER !", True,(255,255,255))
+    text_rect = text_surface.get_rect(center = (width // 2, height // 2))
 
     pygame.display.set_caption("Pac-Man Backend Tester")
 
@@ -198,6 +202,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            
 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -227,7 +232,7 @@ def main():
         # print("player:",game_state.player.x,game_state.player.y)
         # print("Pacgums after:", len(game_state.pacgums))
 
-
+        
         screen.fill(BLACK)
 
         maze = all_data["maze"]
@@ -236,6 +241,8 @@ def main():
             for x in range(width):
                 draw_cell_walls(screen, maze, x, y)
        
+       
+
         draw_pellets(
             screen,
             all_data.get("pacgums", []),
@@ -256,7 +263,11 @@ def main():
         )
 
         draw_player(screen, all_data["player"])
-       
+        if game_state.game_status == Game_status.GAME_OVER:
+            screen.fill((0,0,0))
+            screen.blit(text_surface,text_rect)
+            
+
         pygame.display.flip()
 
     pygame.quit()
