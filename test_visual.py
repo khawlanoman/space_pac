@@ -224,7 +224,7 @@ def main():
         #print("Pacgums before:", len(game_state.pacgums))
         all_data = game_state.all_data_to_dict()
 
-        
+        game_state.move_ghosts(dt)
         # print("score:",game_state.score)
         # print("super:", game_state.super_pacgums)
         game_state.check_ghost_collision()
@@ -232,7 +232,6 @@ def main():
         # print("player:",game_state.player.x,game_state.player.y)
         # print("Pacgums after:", len(game_state.pacgums))
 
-        
         screen.fill(BLACK)
 
         maze = all_data["maze"]
@@ -262,7 +261,7 @@ def main():
             all_data.get("ghosts", [])
         )
  
-        game_state.move_ghosts(dt)
+        
         
 
 

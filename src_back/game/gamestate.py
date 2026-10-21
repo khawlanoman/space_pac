@@ -210,7 +210,7 @@ class Game_state:
 
             if (ghost.x, ghost.y) != (player_x, player_y):
                 continue
-
+            
 
             if ghost.state ==  Ghost_state.EATEN:
                 continue
@@ -275,19 +275,23 @@ class Game_state:
             ghost_y = int(ghost.y)
 
             center =  (abs(ghost.x - ghost_x) < 0.1 and abs(ghost.y - ghost_y) < 0.1)
+            
+            
             if center:
 
-
-                if ghost.state == Ghost_state.SCATTER:
-                    target_x,target_y = self.check_ghost(ghost)
-                elif ghost.state == Ghost_state.CHASE:
-                    target_x,target_y = self.player.x, self.player.y
-                elif ghost.state == Ghost_state.FRIGHTENED:
+                print(f" {ghost.ghost_type}:ghost_x: {ghost.x},ghost_y: {ghost.y}")
+                print(f"player:{self.player.x},{self.player.y}")
+                # if ghost.state == Ghost_state.SCATTER:
+                #     target_x,target_y = self.check_ghost(ghost)
+                # elif ghost.state == Ghost_state.CHASE:
+                #     target_x,target_y = self.player.x, self.player.y
+                # elif ghost.state == Ghost_state.FRIGHTENED:
+                #     continue
+                # opposite = Opposite.ghost.state
+                # for dic in Directions:
+                #     if
+                if not loader.can_move(self.maze, ghost_x,ghost_y, ghost.direction):
                     continue
-                opposite = Opposite.ghost.state
-                for dic in Directions:
-                    if
-                #     if not loader.can_move(self.maze, ghost_x,ghost_y, dic):
 
         
             direc_x, direc_y = ghost.direction.value[:2]
