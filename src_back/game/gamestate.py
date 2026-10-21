@@ -1,4 +1,4 @@
-from .constants import Ghost_state, Ghost_type, Game_status,Directions
+from .constants import Ghost_state, Ghost_type, Game_status,Directions, Opposite
 from .player import PlayerState
 from .ghost import GhostState
 from  ..models import Game_config
@@ -55,13 +55,13 @@ class Game_state:
         self.player = PlayerState(player_position[0],player_position[1],
                              Directions.RIGHT,None,self.config.lives,self.score )
 
-        blinky_ghost = GhostState(ghosts_position[0][0],ghosts_position[0][1],Directions.LEFT,
+        blinky_ghost = GhostState(ghosts_position[0][0],ghosts_position[0][1],Directions.RIGHT,
                                   Ghost_type.BLINKY,Ghost_state.SCATTER,ghosts_position[0],ghost_freaid)
         
         plinky_ghost = GhostState(ghosts_position[1][0],ghosts_position[1][1],Directions.LEFT,
                                   Ghost_type.PINKY,Ghost_state.SCATTER,ghosts_position[1],ghost_freaid)
         
-        inky_ghost = GhostState(ghosts_position[2][0],ghosts_position[2][1],Directions.LEFT,
+        inky_ghost = GhostState(ghosts_position[2][0],ghosts_position[2][1],Directions.RIGHT,
                                 Ghost_type.INKY,Ghost_state.SCATTER,ghosts_position[2],ghost_freaid)
         
         clyde_ghost = GhostState(ghosts_position[3][0],ghosts_position[3][1],Directions.LEFT,
@@ -208,8 +208,6 @@ class Game_state:
 
         for ghost in self.ghosts:
 
-            print("lives:", self.player.lives)
-            print("ghosts_state:", ghost.state)
             if (ghost.x, ghost.y) != (player_x, player_y):
                 continue
 
@@ -257,13 +255,61 @@ class Game_state:
             ghost.x,ghost.y = ghosts_position[3][0], ghosts_position[3][1]
         return (ghost.x, ghost.y)
 
-    def move_ghosts(time) -> None:
+
+    def calculate_distance(self,player, ghost) -> None:
+        return (abs(player.x - ghost.x) + abs(player.y - ghost.y))
+
+
+
+
+
+
+    def move_ghosts(self,td ) -> None:
+    
         for ghost in self.ghosts:
+
+            if ghost.state == Ghost_state.EATEN:
+                continue
+
+            ghost_x = int(ghost.x)
+            ghost_y = int(ghost.y)
+
+            center =  (abs(ghost.x - ghost_x) < 0.1 and abs(ghost.y - ghost_y) < 0.1)
+            if center:
+
+
+                if ghost.state == Ghost_state.SCATTER:
+                    target_x,target_y = self.check_ghost(ghost)
+                elif ghost.state == Ghost_state.CHASE:
+                    target_x,target_y = self.player.x, self.player.y
+                elif ghost.state == Ghost_state.FRIGHTENED:
+                    continue
+                opposite = Opposite.ghost.state
+                for dic in Directions:
+                    if
+                #     if not loader.can_move(self.maze, ghost_x,ghost_y, dic):
+
+        
+            direc_x, direc_y = ghost.direction.value[:2]
+            target_x = ghost_x + direc_x
+            target_y = ghost_y + direc_y
+
+            distance = ghost.speed * td
+
+            if direc_x > 0 :
+                ghost.x  = min(ghost.x + distance, target_x)
+            elif direc_x < 0 :
+                ghost.x  = max(ghost.x - distance, target_x)
+
+            if direc_y > 0 :
+                ghost.y  = min(ghost.y + distance, target_y)
+            elif direc_y < 0 :
+                ghost.y  = max(ghost.y - distance, target_y)
             
-            if ghost.state == Ghost_state.SCATTER:
-                target_x, target_x = check_ghost(ghost)
-            elif ghosts_state == Ghost_state.CHASE:
-                target_x, target_y = self.player.x, self.player.tile_y
-            # elif ghost.state == Ghost_state.FRIGHTENED:
-            #     target_x,target_y = 
+
+
+
+             
+            
+
 

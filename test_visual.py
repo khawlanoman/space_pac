@@ -212,13 +212,13 @@ def main():
                     game_state.handle_input(
                         key_directions[event.key]
                     )
-
+      
         # Your backend controls movement and collision.
         game_state.move_player(dt)
 
         game_state.update_ghosts_time(0.1)
 
-
+       
         game_state.check_pacgum_at_player()
         # print("Player:", game_state.player.x, game_state.player.y)
         #print("Pacgums before:", len(game_state.pacgums))
@@ -261,6 +261,10 @@ def main():
             screen,
             all_data.get("ghosts", [])
         )
+ 
+        game_state.move_ghosts(dt)
+        
+
 
         draw_player(screen, all_data["player"])
         if game_state.game_status == Game_status.GAME_OVER:
