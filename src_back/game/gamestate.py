@@ -208,7 +208,7 @@ class Game_state:
 
         for ghost in self.ghosts:
 
-            if (ghost.x, ghost.y) != (player_x, player_y):
+            if (int(ghost.x), int(ghost.y)) != (player_x, player_y):
                 continue
             
 
@@ -281,22 +281,24 @@ class Game_state:
 
                 print(f" {ghost.ghost_type}:ghost_x: {ghost.x},ghost_y: {ghost.y}")
                 print(f"player:{self.player.x},{self.player.y}")
-                # if ghost.state == Ghost_state.SCATTER:
-                #     target_x,target_y = self.check_ghost(ghost)
-                # elif ghost.state == Ghost_state.CHASE:
-                #     target_x,target_y = self.player.x, self.player.y
-                # elif ghost.state == Ghost_state.FRIGHTENED:
-                #     continue
+                if ghost.state == Ghost_state.SCATTER:
+                    target_x,target_y = self.check_ghost(ghost)
+                elif ghost.state == Ghost_state.CHASE:
+                    target_x,target_y = self.player.x, self.player.y
+                elif ghost.state == Ghost_state.FRIGHTENED:
+                    continue
                 # opposite = Opposite.ghost.state
                 # for dic in Directions:
                 #     if
                 if not loader.can_move(self.maze, ghost_x,ghost_y, ghost.direction):
-                    continue
+                        continue
 
-        
-            direc_x, direc_y = ghost.direction.value[:2]
-            target_x = ghost_x + direc_x
-            target_y = ghost_y + direc_y
+                direc_x, direc_y = ghost.direction.value[:2]
+                
+            else:
+                direc_x, direc_y = ghost.direction.value[:2]
+                target_x = ghost_x + direc_x
+                target_y = ghost_y + direc_y
 
             distance = ghost.speed * td
 
