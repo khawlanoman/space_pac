@@ -46,6 +46,8 @@ class Game_state:
             level_seed = self.config.seed
         else:
             level_seed = randint(1, 100)
+        
+        
 
         self.maze = loader.load_maze(self.width,self.height, level_seed)
 
@@ -56,18 +58,19 @@ class Game_state:
                              Directions.RIGHT,None,self.config.lives,self.score )
 
         blinky_ghost = GhostState(ghosts_position[0][0],ghosts_position[0][1],Directions.RIGHT,
-                                  Ghost_type.BLINKY,Ghost_state.SCATTER,ghosts_position[0],ghost_freaid)
+                                  Ghost_type.BLINKY,Ghost_state.CHASE,ghosts_position[0],ghost_freaid)
         
         plinky_ghost = GhostState(ghosts_position[1][0],ghosts_position[1][1],Directions.LEFT,
-                                  Ghost_type.PINKY,Ghost_state.SCATTER,ghosts_position[1],ghost_freaid)
+                                   Ghost_type.PINKY,Ghost_state.CHASE,ghosts_position[1],ghost_freaid)
         
         inky_ghost = GhostState(ghosts_position[2][0],ghosts_position[2][1],Directions.RIGHT,
-                                Ghost_type.INKY,Ghost_state.SCATTER,ghosts_position[2],ghost_freaid)
+                                Ghost_type.INKY,Ghost_state.CHASE,ghosts_position[2],ghost_freaid)
         
         clyde_ghost = GhostState(ghosts_position[3][0],ghosts_position[3][1],Directions.LEFT,
-                                Ghost_type.CLYDE,Ghost_state.SCATTER,ghosts_position[3],ghost_freaid)
+                                Ghost_type.CLYDE,Ghost_state.CHASE,ghosts_position[3],ghost_freaid)
         
         self.ghosts = [blinky_ghost,plinky_ghost,inky_ghost,clyde_ghost]
+        # self.ghosts = [plinky_ghost]
         self.timer = self.config.level_max_time
 
         self.game_status = Game_status.PLAYING
@@ -261,41 +264,67 @@ class Game_state:
 
 
 
-
-
-
     def move_ghosts(self,td ) -> None:
     
         for ghost in self.ghosts:
 
             if ghost.state == Ghost_state.EATEN:
+                ghost.x, ghost.y = ghost.my_corner
+                ghost.state = Ghost_state.SCATTER
                 continue
 
-            ghost_x = int(ghost.x)
-            ghost_y = int(ghost.y)
+            ghost_x = round(ghost.x)
+            ghost_y = round(ghost.y)
 
             center =  (abs(ghost.x - ghost_x) < 0.1 and abs(ghost.y - ghost_y) < 0.1)
             
             
             if center:
 
-                print(f" {ghost.ghost_type}:ghost_x: {ghost.x},ghost_y: {ghost.y}")
-                print(f"player:{self.player.x},{self.player.y}")
-                # if ghost.state == Ghost_state.SCATTER:
-                #     target_x,target_y = self.check_ghost(ghost)
-                # elif ghost.state == Ghost_state.CHASE:
-                #     target_x,target_y = self.player.x, self.player.y
-                # elif ghost.state == Ghost_state.FRIGHTENED:
-                #     continue
-                # opposite = Opposite.ghost.state
-                # for dic in Directions:
-                #     if
-                if not loader.can_move(self.maze, ghost_x,ghost_y, ghost.direction):
+                if ghost.state == Ghost_state.SCATTER:
+                    target_x,target_y = self.check_ghost(ghost)
+                elif ghost.state == Ghost_state.CHASE:
+                    target_x,target_y = self.player.x, self.player.y
+                elif ghost.state == Ghost_state.FRIGHTENED:
+                    continue
+
+                
+                best_distance = 999
+                best_direct = None
+                opposite = Directions[Opposite[ghost.direction.name].value]
+                opposite_dire = None
+                for dic in Directions:
+
+                    if  dic == opposite:
+                        if loader.can_move(self.maze, ghost_x,ghost_y, dic):
+                            opposite_dire = dic
                         continue
 
-               
+                    if not loader.can_move(self.maze, ghost_x,ghost_y, dic):
+                        continue
+                    
+                    if ghost.state == Ghost_state.FRIGHTENED:
+                        best_direct = dic
+                    else:
+                        direc_x, direc_y = dic.value[:2]
+                        next_x = ghost_x + direc_x
+                        next_y = ghost_y + direc_y
+
+                       
+
+                        distance = abs(target_x - next_x) + abs(target_y - next_y)
+
+                        if distance < best_distance:
+                            best_distance = distance
+                            best_direct = dic
                 
-           
+                if best_direct is not None:
+                    ghost.direction = best_direct
+                elif opposite_dire is not None:
+                    ghost.direction = opposite_dire
+                else:
+                    continue
+             
             direc_x, direc_y = ghost.direction.value[:2]
             target_x = ghost_x + direc_x
             target_y = ghost_y + direc_y
@@ -314,8 +343,39 @@ class Game_state:
             
 
 
+    def check_level_complete(self) -> None:
+        
+        if len(self.pacgums) == 0 :
+            self.level += 1
+            current_lives = self.player.lives
+            self.initialize_level()
+            self.player.lives = current_lives
+            if self.level > len(self.config.levels):
+                self.game_status =  Game_status.VICTORY
 
-             
+            
+    def switch_pause(self) -> None:
+        """ this method is for pause the game or start play"""
+        if self.game_status == Game_status.PLAYING:
+            self.game_status = Game_status.PAUSED
+        
+        elif self.game_status == Game_status.PAUSED:
+            self.game_status = Game_status.PLAYING
+
+
+    def  cheat_skip_level(self) -> None:
+        """this method is for  cheat mode 1 skip the levels"""
+        self.level += 1
+        current_lives = self.player.lives
+        self.initialize_level()
+        self.player.lives = current_lives
+        if self.level > len(self.config.levels):
+                self.game_status =  Game_status.VICTORY
+
+    
+    def cheat_add_lives(self) -> None:
+        """this method is for add lives to the player"""
+        self.player.lives +=1
             
 
 

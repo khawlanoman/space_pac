@@ -1,6 +1,7 @@
 from mazegenerator import MazeGenerator
 from src_back.game.constants import Directions
 from random import Random
+from ..game import constants
 def load_maze( width:int,height:int,seed:int) -> list:
     """this function load the maze from mazegenerator"""
     grid = MazeGenerator(size=(width,height),perfect=False,seed=seed)
@@ -26,6 +27,11 @@ def can_move(maze, x, y, direction):
     ny = y + dy
     
     if nx < 0 or nx >= width or ny < 0 or ny >= height:
+        return False
+    
+    opposite = constants.Opposite[direction.name].value
+    oppo = Directions[opposite]
+    if has_wall(maze, nx, ny, oppo):
         return False
     
     if has_wall(maze, x, y, direction):

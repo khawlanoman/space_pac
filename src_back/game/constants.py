@@ -11,8 +11,8 @@ class Directions(Enum):
 class Opposite(Enum):
     UP = "DOWN"
     DOWN = "UP"
-    LEFT = "RGIHT"
-    RIGHT  = "LEFT"
+    LEFT = "RIGHT"
+    RIGHT = "LEFT"
 
 
 class Cell(Enum):
