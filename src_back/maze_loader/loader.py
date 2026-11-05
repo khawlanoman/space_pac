@@ -6,7 +6,7 @@ def load_maze( width:int,height:int,seed:int) -> list:
     """this function load the maze from mazegenerator"""
     grid = MazeGenerator(size=(width,height),perfect=False,seed=seed)
 
-    return grid.maze
+    return grid
 
 
 def has_wall(maze, x, y, direction):

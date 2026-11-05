@@ -7,7 +7,9 @@ class Directions(Enum):
     LEFT = (-1, 0, 8)
     RIGHT = (1, 0, 2)
 
-
+class Directions_map(Enum):
+    'N': Directions.UP,
+    
 class Opposite(Enum):
     UP = "DOWN"
     DOWN = "UP"

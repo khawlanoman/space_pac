@@ -27,6 +27,13 @@ class Game_state:
                  self.cheats = cheats
                  self.config = config
                  self.highscores = highscores
+                
+                 if self.level == 0:
+                    level_seed = self.config.seed
+                 else:
+                    level_seed = randint(1, 100)
+
+                 self.grid = loader.load_maze(self.width,self.height, level_seed)
 
     def initialize_level(self) -> None:
         """ this function  for  initialization all the data we need  to use """
@@ -48,8 +55,8 @@ class Game_state:
             level_seed = randint(1, 100)
         
         
-
-        self.maze = loader.load_maze(self.width,self.height, level_seed)
+        
+        grid = self.grid
 
         self.pacgums = loader.place_pacgums(self.maze,self.config.pacgum,exclude_po,level_seed)
         self.super_pacgums = loader.place_super_pacgums(self.width,self.height)
@@ -262,7 +269,12 @@ class Game_state:
     def calculate_distance(self,player, ghost) -> None:
         return (abs(player.x - ghost.x) + abs(player.y - ghost.y))
 
+    def ghosts_ai(self) -> None:
 
+       
+        
+
+        
 
     def move_ghosts(self,td ) -> None:
     
@@ -284,7 +296,30 @@ class Game_state:
                 if ghost.state == Ghost_state.SCATTER:
                     target_x,target_y = self.check_ghost(ghost)
                 elif ghost.state == Ghost_state.CHASE:
-                    target_x,target_y = self.player.x, self.player.y
+                    grid = self.grid
+        
+                    grid._exitx = int(self.player.x)
+                    grid._exity = int(self.player.y)
+
+                    for ghost in self.ghosts:
+                        grid._entryx = int(ghost.x)
+                        grid._entryy = int(ghost.y)
+                    
+                        grid._shortest_path = False
+
+                        grid._find_short_path()
+                        path = grid.shortest_path
+
+
+                        direction_map = {
+                            
+                        }
+
+
+
+
+
+
                 elif ghost.state == Ghost_state.FRIGHTENED:
                     continue
 
@@ -377,5 +412,3 @@ class Game_state:
         """this method is for add lives to the player"""
         self.player.lives +=1
             
-
-
