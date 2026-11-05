@@ -1,154 +1,110 @@
-from mazegenerator import MazeGenerator
-from src_back.maze_loader import loader
-from src_back import parsing
-from src_back.game import constants
-from src_back.game.gamestate import Game_state
-from src_back.game.constants import Game_status,Directions
-import argparse
+def move_ghosts(self, td) -> None:
+    for ghost in self.ghosts:
 
+        if ghost.state == Ghost_state.EATEN:
+            ghost.x, ghost.y = ghost.my_corner
+            ghost.state = Ghost_state.SCATTER
+            continue
 
-def parser_args() :
-    parser = argparse.ArgumentParser()
-    parser.add_argument("input", default="config.json")
+        ghost_x = round(ghost.x)
+        ghost_y = round(ghost.y)
 
-    args = parser.parse_args()
+        center = (
+            abs(ghost.x - ghost_x) < 0.1
+            and abs(ghost.y - ghost_y) < 0.1
+        )
 
-    return args
+        if center:
 
+            if ghost.state == Ghost_state.SCATTER:
+                target_x, target_y = self.check_ghost(ghost)
 
-def print_maze(maze:list, place_pacgum:set,corner_position:list,player_position,ghosts_place,super_pacgums,game_state) -> None:
-            grid = maze
-            height = len(grid)
-            width = len(grid[0])
+                best_distance = float('inf')
+                best_direction = None
+                opposite = Directions[
+                    Opposite[ghost.direction.name].value
+                ]
 
-        
-            print("+" + "---+" * width)
+                for direction in Directions:
+                    if direction == opposite:
+                        continue
 
-            for y in range(height):
+                    if not loader.can_move(
+                        self.maze, ghost_x, ghost_y, direction
+                    ):
+                        continue
 
-                line = "|"
+                    dx, dy = direction.value[:2]
+                    next_x = ghost_x + dx
+                    next_y = ghost_y + dy
 
-                for x in range(width):
-                    if (x,y) ==  player_position:
-                        cell = " @ "
-                    
-                    elif (x,y) == (game_state.player.x,game_state.player.y):
-                        cell = " h "
-            
-                    elif (x,y) in ghosts_place:
-                        cell = " G "
-                    elif (x,y) in place_pacgum:
-                        cell = " . "
-                    elif (x,y) in super_pacgums:
-                        cell = " & "
+                    distance = (
+                        abs(target_x - next_x)
+                        + abs(target_y - next_y)
+                    )
+
+                    if distance < best_distance:
+                        best_distance = distance
+                        best_direction = direction
+
+                if best_direction is not None:
+                    ghost.direction = best_direction
+
+                elif loader.can_move(
+                    self.maze, ghost_x, ghost_y, opposite
+                ):
+                    ghost.direction = opposite
+                else:
+                    continue
+
+            elif ghost.state == Ghost_state.CHASE:
+                grid = self.grid
+
+                grid._entryx = ghost_x
+                grid._entryy = ghost_y
+                grid._exitx = round(self.player.x)
+                grid._exity = round(self.player.y)
+
+                grid._shortest_path = False
+                grid._find_short_path()
+
+                path = grid.shortest_path
+
+                directions_map = {
+                    'N': Directions.UP,
+                    'S': Directions.DOWN,
+                    'W': Directions.LEFT,
+                    'E': Directions.RIGHT
+                }
+
+                if path:
+                    direction = directions_map[path[0]]
+
+                    if loader.can_move(
+                        self.maze, ghost_x, ghost_y, direction
+                    ):
+                        ghost.direction = direction
                     else:
-                        cell = "   "
+                        continue
+                else:
+                    continue
 
+            elif ghost.state == Ghost_state.FRIGHTENED:
+                continue
 
-                    if grid[y][x] & 2:
-                        line += cell + "|"
-                    else:
-                        line += cell + " "
+        dx, dy = ghost.direction.value[:2]
 
-                print(line)
+        target_x = ghost_x + dx
+        target_y = ghost_y + dy
 
-                line = "+"
+        distance = ghost.speed * td
 
-                for x in range(width):
-                    if grid[y][x] & 4:
-                        line += "---+"
-                    else:
-                        line += "   +"
+        if dx > 0:
+            ghost.x = min(ghost.x + distance, target_x)
+        elif dx < 0:
+            ghost.x = max(ghost.x - distance, target_x)
 
-                print(line)
-
-def main():
-    try:
-
-        config_data = parser_args()
-
-        data = parsing.pars_config(config_data.input)
-        level= data.levels[0]
-        width = level.width
-        height = level.height
-        seed = data.seed
-        maze = loader.load_maze(width,height,seed)
-
-        # neighbors = loader.get_valid_neighbors(maze,5,5 )
-        
-        player_position = loader.get_center_position(width, height)
-
-        corner_position = loader.get_corner_positions(width, height)
-
-        super_pacgums = loader.place_super_pacgums(width, height)
-        ghosts_place = loader.place_ghosts(width, height)
-        place_pacgum= loader.place_pacgums(maze, data.pacgum, corner_position, data.seed)
-
-
-        count = 0
-        for row in maze:
-            for cell in row:
-                if cell == 15:
-                    count+=1
-
-        
-
-        count_levels = len(data.levels)
-
-
-
-        game_state =  Game_state(maze, width, height, place_pacgum, super_pacgums, (player_position),
-                                ghosts_place,0,count_levels, data.level_max_time,Game_status.PLAYING,
-                                False,{},data,[])
-
-
-        game_state.initialize_level()
-
-       
-        
-       
-        #  take data for this function 
-        all_data  = game_state.all_data_to_dict()
-        #  /////
-        player = (all_data["player"]["x"],all_data["player"]["y"])
-        # game_state.handle_input("up")
-       
-
-
-        game_state.handle_input("up")
-
-        print("→", game_state.player.next_direction)
-       
-        print("Dictionary x:", all_data["player"]["x"])
-        print("Dictionary y:", all_data["player"]["y"])
-
-        game_state.move_player(3)
-
-        print("Player object x:", game_state.player.x)
-        print("Player object y:", game_state.player.y)
-        game_state.move_player(3)
-
-        print("pacgums:",len(game_state.pacgums))
-        game_state.check_pacgum_at_player()
-        print("pacgums:",len(game_state.pacgums))
-        print_maze(all_data["maze"],all_data["pacgums"],all_data["super_pacgums"],player,ghosts_place, super_pacgums,game_state)
-
-      
-        
-
-        # print(" before timer:",all_data["timer"])
-        # print(" before is power:",all_data["player"]["is_power"])
-        # print(" before power_time:",all_data["player"]["power_time"])
-
-        # game_state.update_timers(10.5)
-        # all_data  = game_state.all_data_to_dict()
-        # print("timer:",all_data["timer"])
-        # print("is power:",all_data["player"]["is_power"])
-        # print("power_time:",all_data["player"]["power_time"])
-        # # print(all_data["player"]["next_direction"])
-
-    except Exception as er:
-        print("ERROR:", er)
-
-if __name__== "__main__":
-    main()
+        if dy > 0:
+            ghost.y = min(ghost.y + distance, target_y)
+        elif dy < 0:
+            ghost.y = max(ghost.y - distance, target_y)

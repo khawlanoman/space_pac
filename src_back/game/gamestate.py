@@ -269,17 +269,15 @@ class Game_state:
     def calculate_distance(self,player, ghost) -> None:
         return (abs(player.x - ghost.x) + abs(player.y - ghost.y))
 
-    def ghosts_ai(self) -> None:
 
-       
-        
 
         
 
     def move_ghosts(self,td ) -> None:
     
+       
         for ghost in self.ghosts:
-
+            
             if ghost.state == Ghost_state.EATEN:
                 ghost.x, ghost.y = ghost.my_corner
                 ghost.state = Ghost_state.SCATTER
@@ -295,87 +293,61 @@ class Game_state:
 
                 if ghost.state == Ghost_state.SCATTER:
                     target_x,target_y = self.check_ghost(ghost)
+                    
+
                 elif ghost.state == Ghost_state.CHASE:
                     grid = self.grid
         
                     grid._exitx = int(self.player.x)
                     grid._exity = int(self.player.y)
-
-                    for ghost in self.ghosts:
-                        grid._entryx = int(ghost.x)
-                        grid._entryy = int(ghost.y)
-                    
-                        grid._shortest_path = False
-
-                        grid._find_short_path()
-                        path = grid.shortest_path
-
-
-                        direction_map = {
-                            
-                        }
-
-
-
-
-
+                   
+                    # for ghost in self.ghosts:
+                    grid._entryx = int(ghost.x)
+                    grid._entryy = int(ghost.y)
+                
+                    grid._shortest_path = False
+                    grid._find_short_path()
+                    path = grid.shortest_path
+                    directions_map={
+                        'N': Directions.UP,
+                        'S': Directions.DOWN,
+                        'W': Directions.LEFT,
+      -                  'E': Directions.RIGHT
+                    }
+                    if path:
+                        direction = directions_map[path[0]]
+                        print("ghost move check:",ghost.ghost_type,loader.can_move(self.maze,int(ghost.x), int(ghost.y),direction))
+                        if loader.can_move(self.maze,int(ghost.x), int(ghost.y),direction):
+                            ghost.direction = direction
+                        else:
+                            continue
+                    else:
+                        continue
 
                 elif ghost.state == Ghost_state.FRIGHTENED:
                     continue
 
-                
-                best_distance = 999
-                best_direct = None
-                opposite = Directions[Opposite[ghost.direction.name].value]
-                opposite_dire = None
-                for dic in Directions:
+                dx, dy = ghost.direction.value[:2]
+                target_x = ghost_x + dx
+                target_y = ghost_y + dy
 
-                    if  dic == opposite:
-                        if loader.can_move(self.maze, ghost_x,ghost_y, dic):
-                            opposite_dire = dic
-                        continue
+                distance = ghost.speed * td
 
-                    if not loader.can_move(self.maze, ghost_x,ghost_y, dic):
-                        continue
-                    
-                    if ghost.state == Ghost_state.FRIGHTENED:
-                        best_direct = dic
-                    else:
-                        direc_x, direc_y = dic.value[:2]
-                        next_x = ghost_x + direc_x
-                        next_y = ghost_y + direc_y
-
-                       
-
-                        distance = abs(target_x - next_x) + abs(target_y - next_y)
-
-                        if distance < best_distance:
-                            best_distance = distance
-                            best_direct = dic
-                
-                if best_direct is not None:
-                    ghost.direction = best_direct
-                elif opposite_dire is not None:
-                    ghost.direction = opposite_dire
-                else:
-                    continue
-             
-            direc_x, direc_y = ghost.direction.value[:2]
-            target_x = ghost_x + direc_x
-            target_y = ghost_y + direc_y
-
-            distance = ghost.speed * td
-
-            if direc_x > 0 :
-                ghost.x  = min(ghost.x + distance, target_x)
-            elif direc_x < 0 :
-                ghost.x  = max(ghost.x - distance, target_x)
-
-            if direc_y > 0 :
-                ghost.y  = min(ghost.y + distance, target_y)
-            elif direc_y < 0 :
-                ghost.y  = max(ghost.y - distance, target_y)
+                if dx > 0:
+                    ghost.x = min(ghost.x + distance, target_x)
+                elif dx < 0:
+                    ghost.x = max(ghost.x - distance, target_x)
             
+                if dy > 0:
+                    ghost.y = min(ghost.y + distance, target_y)
+                elif dy < 0:
+                    ghost.y = max(ghost.y - distance, target_y)
+                
+                # print("\nghost:",ghost.ghost_type,ghost.x, ghost.y,"direction ",ghost.direction,"speed", ghost.speed, "td",td)
+
+
+            
+
 
 
     def check_level_complete(self) -> None:

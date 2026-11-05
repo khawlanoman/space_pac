@@ -253,12 +253,10 @@ def main():
         game_state.move_player(dt)
         game_state.check_pacgum_at_player()
         game_state.update_ghosts_time(0.1)
-        # game_state.move_ghosts(dt)
-        game_state.ghosts_ai()
+        game_state.move_ghosts(dt)
+        # game_state.ghosts_ai()
         game_state.check_ghost_collision()
         game_state.check_level_complete()
-
-       
 
         screen.fill(BLACK)
 
@@ -321,7 +319,6 @@ def main():
 
     pygame.quit()
     sys.exit()
-
 
 if __name__ == "__main__":
     main()
