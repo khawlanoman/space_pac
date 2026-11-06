@@ -2,13 +2,14 @@ from .constants import Ghost_state, Ghost_type, Game_status,Directions, Opposite
 from .player import PlayerState
 from .ghost import GhostState
 from  ..models import Game_config
+import random
 from random import randint
 from ..maze_loader import loader
 
 
 class Game_state:
 
-    def __init__(self,grid,width:int,height:int,pacgums:set[tuple[int,int]],
+    def __init__(self,maze:list[list[int]],width:int,height:int,pacgums:set[tuple[int,int]],
                  super_pacgums:set[tuple[int,int]],player:PlayerState,
                  ghosts:list[GhostState],score:int, level:int, timer:float,game_status:Game_status,
                  cheat_mode:bool, cheats:dict[str,bool],config:Game_config, highscores:list[dict]) -> None:
@@ -29,13 +30,13 @@ class Game_state:
                  self.config = config
                  self.highscores = highscores
                 
-                 if self.level == 0:
-                    level_seed = self.config.seed
-                 else:
-                    level_seed = randint(1, 100)
+                #  if self.level == 0:
+                #     level_seed = self.config.seed
+                #  else:
+                #     level_seed = randint(1, 100)
 
-                 self.grid = grid
-                 self.maze = grid.maze
+                #  self.grid = grid
+                 self.maze = maze
 
     def initialize_level(self) -> None:
         """ this function  for  initialization all the data we need  to use """
@@ -58,7 +59,7 @@ class Game_state:
         
         
         
-        grid = self.grid
+        # grid = self.grid
 
         self.pacgums = loader.place_pacgums(self.maze,self.config.pacgum,exclude_po,level_seed)
         self.super_pacgums = loader.place_super_pacgums(self.width,self.height)
@@ -248,14 +249,14 @@ class Game_state:
                 
                 if ghost.ghost_freaid <= 0:
                     ghost.ghost_freaid = 0.0
-                    ghost.state = Ghost_state.SCATTER
+                    ghost.state = Ghost_state.CHASE
 
             if ghost.state == Ghost_state.EATEN:
                 ghost.respawn_time -= time
 
                 if ghost.respawn_time <= 0:
                     ghost.respawn_time = 0.0
-                    ghost.state = Ghost_state.SCATTER
+                    ghost.state = Ghost_state.CHASE
 
     def check_ghost(self, ghost)  -> None:
         ghosts_position = loader.place_ghosts(self.width, self.height)
@@ -325,7 +326,7 @@ class Game_state:
 
             if ghost.state == Ghost_state.EATEN:
                 ghost.x ,ghost.y = ghost.my_corner
-                ghost.state = Ghost_state.SCATTER
+                ghost.state = Ghost_state.CHASE
 
             center = (abs(ghost.x - ghost_x) < 0.1 and abs(ghost.y - ghost_y) < 0.1)
 
@@ -361,6 +362,19 @@ class Game_state:
                             keys.append(k)
                             break
                     ghost.direction = Directions[keys[0]]
+
+                if ghost.state == Ghost_state.FRIGHTENED:
+                    all_directions = []
+                    for i in Directions:
+                        if loader.can_move(self.maze,ghost_x,ghost_y,i):
+                            all_directions.append(i.name)
+
+                    oppesite = Directions[Opposite[ghost.direction.name].value]
+
+                    if oppesite.name in all_directions and len(all_directions) > 1:
+                        all_directions.remove(oppesite.name)
+                   
+                    ghost.direction = Directions[random.choice(all_directions)]
 
             dx ,dy = ghost.direction.value[:2]
 

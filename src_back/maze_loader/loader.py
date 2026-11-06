@@ -6,7 +6,7 @@ def load_maze( width:int,height:int,seed:int) -> list:
     """this function load the maze from mazegenerator"""
     grid = MazeGenerator(size=(width,height),perfect=False,seed=seed)
 
-    return grid
+    return grid.maze
 
 
 def has_wall(maze, x, y, direction):
@@ -107,6 +107,6 @@ def place_pacgums(maze, count:int, exclude_po, seed:int) -> list:
     rendom_gen = Random(seed)
     rendom_gen.shuffle(places)
 
-    pacgums  =set(places[0:count])
+    pacgums  = set(places[0:count])
     return pacgums
 

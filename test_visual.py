@@ -44,7 +44,7 @@ def create_game():
     height = level.height
     seed = data.seed
 
-    grid = loader.load_maze(width, height, seed)
+    maze = loader.load_maze(width, height, seed)
 
     # maze = grid.maze
     player_position = loader.get_center_position(width, height)
@@ -54,13 +54,13 @@ def create_game():
     ghosts_place = loader.place_ghosts(width, height)
 
     pacgums = loader.place_pacgums(
-        grid.maze, data.pacgum, corner_position, data.seed
+        maze, data.pacgum, corner_position, data.seed
     )
 
     count_levels = len(data.levels)
 
     game_state = Game_state(
-        grid,
+        maze,
         width,
         height,
         pacgums,
@@ -253,7 +253,7 @@ def main():
         game_state.move_player(dt)
         game_state.check_pacgum_at_player()
         game_state.update_ghosts_time(0.1)
-        # game_state.move_ghosts(dt)
+        game_state.move_ghosts(dt)
         # game_state.ghosts_ai()
         game_state.check_ghost_collision()
         game_state.check_level_complete()
