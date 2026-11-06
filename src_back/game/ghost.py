@@ -15,6 +15,7 @@ class GhostState:
                  self.respawn_time = respawn_time
                  self.ghost_freaid = ghost_freaid
                  self.speed = speed
+                 self.last_tile  = None
     
 
     def ghosts_dict(self) -> dict:

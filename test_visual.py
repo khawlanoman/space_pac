@@ -60,7 +60,7 @@ def create_game():
     count_levels = len(data.levels)
 
     game_state = Game_state(
-        grid.maze,
+        grid,
         width,
         height,
         pacgums,
@@ -116,8 +116,8 @@ def draw_pellets(screen, positions, color, radius):
 
 
 def draw_player(screen, player_data):
-    x = int(player_data["x"])
-    y = int(player_data["y"])
+    x = player_data["x"]
+    y = player_data["y"]
 
     center = (
         int(x * CELL_SIZE + CELL_SIZE / 2),

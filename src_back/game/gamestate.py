@@ -5,14 +5,15 @@ from  ..models import Game_config
 from random import randint
 from ..maze_loader import loader
 
+
 class Game_state:
 
-    def __init__(self,maze:list[list[int]],width:int,height:int,pacgums:set[tuple[int,int]],
+    def __init__(self,grid,width:int,height:int,pacgums:set[tuple[int,int]],
                  super_pacgums:set[tuple[int,int]],player:PlayerState,
                  ghosts:list[GhostState],score:int, level:int, timer:float,game_status:Game_status,
                  cheat_mode:bool, cheats:dict[str,bool],config:Game_config, highscores:list[dict]) -> None:
 
-                 self.maze = maze
+                 
                  self.width = width
                  self.height = height
                  self.pacgums = pacgums
@@ -33,7 +34,8 @@ class Game_state:
                  else:
                     level_seed = randint(1, 100)
 
-                 self.grid = loader.load_maze(self.width,self.height, level_seed)
+                 self.grid = grid
+                 self.maze = grid.maze
 
     def initialize_level(self) -> None:
         """ this function  for  initialization all the data we need  to use """
@@ -133,19 +135,21 @@ class Game_state:
 
     def move_player(self, dt):
             """ this methode is moves the player in the current direction if there is no wall """
-            tile_x = int(self.player.x)
-            tile_y = int(self.player.y)
+            tile_x = round(self.player.x)
+            tile_y = round(self.player.y)
             
+            center = (abs(self.player.x - tile_x) < 0.1 and abs(self.player.y - tile_y) < 0.1)
 
-            if self.player.next_direction:
-                if loader.can_move(self.maze, tile_x, tile_y, self.player.next_direction):
-                    self.player.direction = self.player.next_direction
-                    self.player.next_direction = None
-  
-                
- 
-            if not loader.can_move(self.maze, tile_x, tile_y, self.player.direction):
-                return  
+            if center :
+                if self.player.next_direction:
+                    if loader.can_move(self.maze, tile_x, tile_y, self.player.next_direction):
+                        self.player.direction = self.player.next_direction
+                        self.player.next_direction = None
+    
+                    
+    
+                if not loader.can_move(self.maze, tile_x, tile_y, self.player.direction):
+                    return  
             
             dx, dy = self.player.direction.value[:2]
             target_x = tile_x + dx
@@ -213,14 +217,15 @@ class Game_state:
     def check_ghost_collision(self) -> None:
         """ this function is for check position
         of ghost  and change it state """
-        player_x = int(self.player.x)
-        player_y = int(self.player.y)
+  
 
         for ghost in self.ghosts:
 
-            if (int(ghost.x), int(ghost.y)) != (player_x, player_y):
+            distance = abs(ghost.x - self.player.x) + abs(ghost.y - self.player.y)
+
+            if distance > 0.5:     
                 continue
-            
+
 
             if ghost.state ==  Ghost_state.EATEN:
                 continue
@@ -271,84 +276,7 @@ class Game_state:
 
 
 
-        
-
-    def move_ghosts(self,td ) -> None:
-    
        
-        for ghost in self.ghosts:
-            
-            if ghost.state == Ghost_state.EATEN:
-                ghost.x, ghost.y = ghost.my_corner
-                ghost.state = Ghost_state.SCATTER
-                continue
-
-            ghost_x = round(ghost.x)
-            ghost_y = round(ghost.y)
-
-            center =  (abs(ghost.x - ghost_x) < 0.1 and abs(ghost.y - ghost_y) < 0.1)
-            
-            
-            if center:
-
-                if ghost.state == Ghost_state.SCATTER:
-                    target_x,target_y = self.check_ghost(ghost)
-                    
-
-                elif ghost.state == Ghost_state.CHASE:
-                    grid = self.grid
-        
-                    grid._exitx = int(self.player.x)
-                    grid._exity = int(self.player.y)
-                   
-                    # for ghost in self.ghosts:
-                    grid._entryx = int(ghost.x)
-                    grid._entryy = int(ghost.y)
-                
-                    grid._shortest_path = False
-                    grid._find_short_path()
-                    path = grid.shortest_path
-                    directions_map={
-                        'N': Directions.UP,
-                        'S': Directions.DOWN,
-                        'W': Directions.LEFT,
-      -                  'E': Directions.RIGHT
-                    }
-                    if path:
-                        direction = directions_map[path[0]]
-                        print("ghost move check:",ghost.ghost_type,loader.can_move(self.maze,int(ghost.x), int(ghost.y),direction))
-                        if loader.can_move(self.maze,int(ghost.x), int(ghost.y),direction):
-                            ghost.direction = direction
-                        else:
-                            continue
-                    else:
-                        continue
-
-                elif ghost.state == Ghost_state.FRIGHTENED:
-                    continue
-
-                dx, dy = ghost.direction.value[:2]
-                target_x = ghost_x + dx
-                target_y = ghost_y + dy
-
-                distance = ghost.speed * td
-
-                if dx > 0:
-                    ghost.x = min(ghost.x + distance, target_x)
-                elif dx < 0:
-                    ghost.x = max(ghost.x - distance, target_x)
-            
-                if dy > 0:
-                    ghost.y = min(ghost.y + distance, target_y)
-                elif dy < 0:
-                    ghost.y = max(ghost.y - distance, target_y)
-                
-                # print("\nghost:",ghost.ghost_type,ghost.x, ghost.y,"direction ",ghost.direction,"speed", ghost.speed, "td",td)
-
-
-            
-
-
 
     def check_level_complete(self) -> None:
         
@@ -384,3 +312,70 @@ class Game_state:
         """this method is for add lives to the player"""
         self.player.lives +=1
             
+
+    def move_ghosts(self, dt) -> None:
+
+        target_x = self.player.x
+        target_y = self.player.y
+        
+        for ghost in self.ghosts:
+
+            ghost_x = round(ghost.x)
+            ghost_y = round(ghost.y)
+
+            if ghost.state == Ghost_state.EATEN:
+                ghost.x ,ghost.y = ghost.my_corner
+                ghost.state = Ghost_state.SCATTER
+
+            center = (abs(ghost.x - ghost_x) < 0.1 and abs(ghost.y - ghost_y) < 0.1)
+
+            if center and ghost.last_tile != (ghost_x, ghost_y):
+                ghost.last_tile = (ghost_x, ghost_y)
+
+                if  ghost.state ==  Ghost_state.CHASE:
+                    all_directions = []
+                    for i in Directions:
+                        if loader.can_move(self.maze,ghost_x,ghost_y,i):
+                            all_directions.append(i.name)
+
+                    oppesite = Directions[Opposite[ghost.direction.name].value]
+
+                    if oppesite.name in all_directions and len(all_directions) > 1:
+                        all_directions.remove(oppesite.name)
+                   
+                    distance_direct = {}
+                    for i in all_directions:
+                      
+                        direct = Directions[i]
+                        dx ,dy = direct.value[:2]
+                        nextp_x,nextp_y = ((dx + ghost_x) , (dy + ghost_y))
+
+                        distance = (abs(target_x - nextp_x) + abs(target_y - nextp_y))
+                        distance_direct[i] = distance
+
+                    keys = []
+                    min_distance = min(distance_direct.values())
+                    for k,v in distance_direct.items():
+                        if  v == min_distance:
+
+                            keys.append(k)
+                            break
+                    ghost.direction = Directions[keys[0]]
+
+            dx ,dy = ghost.direction.value[:2]
+
+            next_x = ghost_x + dx
+            next_y = ghost_y + dy
+
+            distance = ghost.speed * dt
+
+            if dx > 0:
+                ghost.x = min(ghost.x + distance, next_x)
+            elif dx < 0:
+                ghost.x = max(ghost.x - distance, next_x)
+            
+            if dy > 0:
+                ghost.y = min(ghost.y + distance, next_y)
+            elif dy < 0:
+                ghost.y = max(ghost.y - distance, next_y)
+                

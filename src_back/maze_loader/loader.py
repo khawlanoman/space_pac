@@ -28,15 +28,18 @@ def can_move(maze, x, y, direction):
     
     if nx < 0 or nx >= width or ny < 0 or ny >= height:
         return False
-    
+
     opposite = constants.Opposite[direction.name].value
     oppo = Directions[opposite]
+  
     if has_wall(maze, nx, ny, oppo):
+       
         return False
-    
+
     if has_wall(maze, x, y, direction):
+       
         return False
-    
+        
     return True
 
 
@@ -57,7 +60,7 @@ def get_center_position(width:int , height: int)-> tuple:
     center_x = width // 2
     center_y = height // 2
 
-    return (center_x, center_y)
+    return (center_x , center_y)
 
 def get_corner_positions(width: int, height: int) -> list:
     """ this method for the corner of maze for the position of super pacgums """
