@@ -172,8 +172,8 @@ class Game_state:
             if pacman and one of them in the same position  remove it from the list of super_pacgums or
             pacgums and add the points to score
         """
-        player_x = int(self.player.x)
-        player_y = int(self.player.y)
+        player_x = round(self.player.x)
+        player_y = round(self.player.y)
 
         if (player_x,player_y) in self.pacgums:
             self.pacgums.remove((player_x,player_y))

@@ -86,6 +86,7 @@ def place_ghosts(width: int, height: int)-> list:
 
 def place_pacgums(maze, count:int, exclude_po, seed:int) -> list:
     """ this method for  distribution the pacgums inside the maze'"""
+    
     width = len(maze[0])
     height = len(maze)
 
