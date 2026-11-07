@@ -12,7 +12,7 @@ class Opposite(Enum):
     UP = "DOWN"
     DOWN = "UP"
     LEFT = "RIGHT"
-    RIGHT = "LEFT"
+    RIGHT  = "LEFT"
 
 
 class Cell(Enum):
@@ -31,7 +31,7 @@ class Game_status(Enum):
 
 class Ghost_state(Enum):
     CHASE = "chase"
-    SCATTER = "scatter"
+    WAITING = "waiting"
     FRIGHTENED = "frightened"
     EATEN = "eaten"
 

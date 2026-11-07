@@ -1,4 +1,4 @@
-from .constants import Ghost_state, Ghost_type, Game_status,Directions, Opposite
+from .constants import Ghost_state, Ghost_type, Game_status, Directions, Opposite
 from .player import PlayerState
 from .ghost import GhostState
 from  ..models import Game_config
@@ -228,12 +228,16 @@ class Game_state:
                 continue
 
 
-            if ghost.state ==  Ghost_state.EATEN:
-                continue
+            if ghost.state == Ghost_state.EATEN:
+                ghost.state = Ghost_state.WAITING
+                ghost.time_sleep = 10.0
+                ghost.last_tile =None
+                
+                
 
             elif ghost.state ==  Ghost_state.FRIGHTENED:
                 ghost.state = Ghost_state.EATEN
-                ghost.respawn_time = 30.0
+                ghost.respawn_time = 5.0
             
             else:
                 self.rest_player()
@@ -246,17 +250,25 @@ class Game_state:
         for ghost in self.ghosts:
             if ghost.state == Ghost_state.FRIGHTENED:
                 ghost.ghost_freaid -= time
-                
+
                 if ghost.ghost_freaid <= 0:
                     ghost.ghost_freaid = 0.0
                     ghost.state = Ghost_state.CHASE
 
-            if ghost.state == Ghost_state.EATEN:
+            elif ghost.state == Ghost_state.EATEN:
                 ghost.respawn_time -= time
 
                 if ghost.respawn_time <= 0:
                     ghost.respawn_time = 0.0
+                    ghost.state = Ghost_state.WAITING
+
+            elif ghost.state == Ghost_state.WAITING:
+                ghost.time_sleep -=time
+
+                if ghost.time_sleep <= 0:
+                    ghost.time_sleep = 0.0
                     ghost.state = Ghost_state.CHASE
+
 
     def check_ghost(self, ghost)  -> None:
         ghosts_position = loader.place_ghosts(self.width, self.height)
@@ -272,12 +284,7 @@ class Game_state:
         return (ghost.x, ghost.y)
 
 
-    def calculate_distance(self,player, ghost) -> None:
-        return (abs(player.x - ghost.x) + abs(player.y - ghost.y))
 
-
-
-       
 
     def check_level_complete(self) -> None:
         
@@ -326,8 +333,10 @@ class Game_state:
 
             if ghost.state == Ghost_state.EATEN:
                 ghost.x ,ghost.y = ghost.my_corner
-                ghost.state = Ghost_state.CHASE
+                ghost.state = Ghost_state.WAITING
 
+            if ghost.state == Ghost_state.WAITING:
+                continue
             center = (abs(ghost.x - ghost_x) < 0.1 and abs(ghost.y - ghost_y) < 0.1)
 
             if center and ghost.last_tile != (ghost_x, ghost_y):

@@ -10,7 +10,7 @@ import argparse
 import sys
 
 
-CELL_SIZE = 30
+CELL_SIZE = 50
 FPS = 50
 TOP_BAR = 50
 
