@@ -232,6 +232,10 @@ class Game_state:
                 ghost.state = Ghost_state.WAITING
                 ghost.time_sleep = 10.0
                 ghost.last_tile =None
+                continue
+
+            elif ghost.state == Ghost_state.WAITING:
+                continue
                 
                 
 
